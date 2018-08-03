@@ -39,8 +39,8 @@
   //vertices[, num] -> bool
   const isClosed = (v, tol) => {
     tol = getTol(tol);
-    const last = v._s[0] - 1;
-    return euc(v[last], v[0], v[2 * last], v[last + 1]) <= tol;
+    const nr = v._s[0];
+    return euc(v[0], v[nr], v[nr-1], v[2*nr - 1]) <= tol;
   };
   
   //vertices -> array
@@ -172,22 +172,38 @@
     }
     
     //[num] -> cube (polygon, but not a polygon object)
-    smooth(step) {
-      step = assert.posInt(+def(assert.single(step), 2));
+    smooth(iter, tol) {
+      iter = assert.posInt(+def(assert.single(iter), 1));
       const p = this.p,
-      let n, nOld, z, zOld;
-      nOld = p._s[0];
-      for (let s=0; s<step; s++) {
+            clsd = isClosed(p, tol);
+      let nOld = p._s[0],
+          zOld = p,
+          n,
+          z;
+      for (let s=0; s<iter; s++) {
         n = 2*(nOld - 1);
+        if (clsd) n++;
         z = [n,2].cube();
-        for (let i=0; i<nOld-1) {
-          !!!!!!!!!!!!!!!!!!!!HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-          
-          
+        for (let i=0; i<nOld-1; i++) {
+          const x0 = zOld[i],
+                x1 = zOld[i + 1],
+                y0 = zOld[i + nOld],
+                y1 = zOld[i + 1 + nOld];
+          z[2*i]         = 0.75*x0 + 0.25*x1;
+          z[2*i + 1]     = 0.25*x0 + 0.75*x1;
+          z[2*i + n]     = 0.75*y0 + 0.25*y1;
+          z[2*i + 1 + n] = 0.25*y0 + 0.75*y1;
         }
+        if (clsd) {
+          z[n - 1]   = z[0];
+          z[2*n - 1] = z[n];
+        }
+        nOld = n;
+        zOld = z;
       }
+      return z;
     }
-    
+      
     //cube -> cube (vector)
     contain(test) {
       checkPoints(test);
@@ -290,7 +306,7 @@
   
       //smooth,  others...?
   
-
+//replace Length in names with Len?????????  
 
 /*NOTES:
 
@@ -323,7 +339,6 @@
     -also use fact that distance from a test point to an end points of a seg is upper bound for
     dist to seg
 11)smooth 
-  -is for polylines - close if reqd
   -can use with simplify to get smooth shape with fewer verts
 12) have not checked many args (eg where should be +ve) should be more checks?
 */
