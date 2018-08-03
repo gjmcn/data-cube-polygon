@@ -2,7 +2,7 @@
   'use strict';
   
   const {
-    assert, def, addArrayGetter
+    assert, def, addArrayGetter, copyKey, copyLabel
   } = Array.prototype._helper;
   
   
@@ -57,13 +57,13 @@
   
   //points -> bool
   const checkPoints = pt => {
-   if ( !pt._data_cube ||
-         p._s[1] !== 2 ||
-         p._s[2] !== 1 ||
+   if ( !pt._data_cube  ||
+         pt._s[1] !== 2 ||
+         pt._s[2] !== 1
       ) throw Error('invalid points');
   };
   
-  
+
   //---------- polygon class ----------//
 
   class Polygon {
@@ -169,7 +169,7 @@
       return s(p.arAr(), epsilon).matrix();
     }
     
-    //cube -> vector
+    //cube -> cube (vector)
     contain(test) {
       checkPoints(test);
       const p = this.p,
@@ -196,45 +196,81 @@
       copyLabel(test, z, 1);
       return z;
     }
-    
-      CHECK AND TEST THIS!!!!!!!!
-      
-    /*
-    function (point, vs) {
+     
+    //cube[, bool] -> cube/array
+    dist(test, retPt) {
+      checkPoints(test);
+      retPt = assert.single(retPt);
+      const p = this.p,
+            np = p._s[0],
+            nt = test._s[0],
+            seg = segLength(p),
+            zDist = [nt].cube(),
+            zPt = retPt ? [nt,2].cube() : null;
+      let dist, 
+          newPt = new Array(2);
+      const update = (d, x, y) => {
+        if (d < dist) {
+          dist = d;
+          if (retPt) {
+            newPt[0] = x;
+            newPt[1] = y;
+          }
+        }
+      };
+      for (let t=0; t<nt; t++) {
+        const x = test[t],
+              y = test[t + nt];
+        dist = Infinity;
+        newPt[0] = undefined;
+        newPt[1] = undefined;
+        for (let i=1; i<np; i++) {
+          const x1 = p[i - 1],
+                x2 = p[i],
+                y1 = p[i - 1 + np],
+                y2 = p[i + np],
+                len = seg[i-1],
+                proj = ((x - x1)*(x2 - x1) + (y - y1)*(y2 - y1)) / len;
+          if (proj < 0 || proj > len) {  //projection misses, use closest end point
+            const d1 = euc(x, y, x1, y1),
+                  d2 = euc(x, y, x2, y2);
+            d1 < d2 ? update(d1, x1, y1) : update(d2, x2, y2);
+          }
+          else {  //use projection
+            const interp = proj / len,
+                  xTmp = x1 + interp*(x2 - x1),
+                  yTmp = y1 + interp*(y2 - y1),
+                  d = euc(x, y, xTmp, yTmp); 
+            update(d, xTmp, yTmp);
+          }
+        }
+        zDist[t] = dist;
+        if (retPt) {
+          zPt[t] = newPt[0];
+          zPt[t + nt] = newPt[1];        
+        }
+      }
+      copyKey(test, zDist, 1);
+      copyLabel(test, zDist, 1);
+      if (retPt) {
+        copyKey(test, zPt);
+        copyLabel(test, zPt);
+        return [zDist, zPt];
+      }
+      return zDist;
+    }
 
-    var x = point[0], y = point[1];
-    
-    var inside = false;
-    for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-        var xi = vs[i][0], yi = vs[i][1];
-        var xj = vs[j][0], yj = vs[j][1];
-        
-        var intersect = ((yi > y) != (yj > y))
-            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-        if (intersect) inside = !inside;
-    }
-    
-    return inside;
-    */
-      
-      
-      
-    }
-    
-    
-    
-    //KEEP THE row vectors of the pts
-    
   }
-  
+    
+    
   addArrayGetter('poly', function() {
     return new Polygon(this);
   });
   
-  
-      //inside, smooth, geojson, concave hull?, others...?
-  
 }
+  
+      //smooth,  others...? - points at arc length?
+  
 
 
 /*NOTES:
@@ -253,9 +289,20 @@
 6) simplify
   -no special provision for closed polygons
   -inefficient since  cube -> array-of-arrays -> simplify -> cube
-7) contain: points can have extras - row and page extras are retained
-
-
+7) contain:
+  -points can have extras - row and page extras are retained
+  -must be non-intersecting poly?
+  -matters clockwise or counter?
+  -does not allow sep components?
+8) check all methods behave approp for open and closed polys
+9) check all methods independent of clovkwise versus counter
+  -poss just do this via tests
+10) dist
+  -is for polyline to a point - use closed polygon if nec
+   -naive the way considers all points, could use some kd-tree style or nearest neightbors thing
+   to avoid all comparisons
+    -also use fact that distance from a test point to an end points of a seg is upper bound for
+    dist to seg
 */
 
 

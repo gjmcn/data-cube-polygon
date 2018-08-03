@@ -5,7 +5,7 @@ import uglify from 'rollup-plugin-uglify';
 export default {
   input: 'src/polygon.js',
   output: {
-    extend: true,
+    extend: false,
     file: 'dist/polygon.js',
     format: 'umd',
     name: 'polygon'
