@@ -296,54 +296,9 @@
     }
 
   }
-    
-    
+ 
   addArrayGetter('poly', function() {
     return new Polygon(this);
   });
   
 }
-  
-      //smooth,  others...?
-  
-//replace Length in names with Len?????????  
-
-/*NOTES:
-
-1) p does not copy the points - so changing them can invalidate the polygon objects
-  -copy beforehand if nec:   x.copy().poly
-2) .poly always checks input so store result of poly for performance
-  -and so can write   eg   xp = x.poly;   xp.centroid();    xp.area() ...
-    -though note that xp.add(100) will not work, normally convert and use each call, eg
-      x.poly.centroid().add(100)
-3) does not check values - eg that are finite numbers
-4) use .p to get the points:    xp = x.poly;   x.p
-5)atArcLength
-  -sorts the arc length values into ascending order - so rows of returned pts may not corresp to
-   row sof passed arc lengths
-6) simplify
-  -no special provision for closed polygons
-  -inefficient since  cube -> array-of-arrays -> simplify -> cube
-7) contain:
-  -points can have extras - row and page extras are retained
-  -must be non-intersecting poly?
-  -matters clockwise or counter?
-  -does not allow sep components?
-8) check all methods behave approp for open and closed polys
-9) check all methods independent of clockwise versus counter
-  -poss just do this via tests
-10) dist
-  -is for polyline to a point - use closed polygon if nec
-   -naive the way considers all points, could use some kd-tree style or nearest neightbors thing
-   to avoid all comparisons
-    -also use fact that distance from a test point to an end points of a seg is upper bound for
-    dist to seg
-11)smooth 
-  -can use with simplify to get smooth shape with fewer verts
-12) have not checked many args (eg where should be +ve) should be more checks?
-*/
-
-
-
-
-
