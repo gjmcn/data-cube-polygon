@@ -2,7 +2,7 @@
   'use strict';
   
   const {
-    assert, def, addArrayGetter, copyKey, copyLabel
+    assert, def, addArrayGetter, copyKey, copyLabel, toArray
   } = Array.prototype._helper;
   
   
@@ -52,7 +52,9 @@
   
   //vertices -> array
   const arcLength = v => {
-    return segLength(v).unshift(0).cumuSum().toArray();
+    const z = segLength(v);
+    z.unshift(0);
+    return z.cumuSum().toArray();
   };
   
   //points -> bool
@@ -129,31 +131,31 @@
     length() {
       return segLength(this.p).sum()[0];  
     }
-    
-    //num[, num] -> cube (polygon, but not a polygon object)
-    eqSpace(k, tol) {
-      k = assert.posInt(assert.single(k));
-      if (k < 2) throw Error('new number of points must be greater than 1');
+        
+    //*[, num] -> cube
+    atArcLength(s, scale) {
+      s = toArray(s).arrange('asc');
+      scale = assert.single(scale);
       const p = this.p,
-            clsd = isClosed(p, tol),
-            nr = this._s[0],
+            nr = p._s[0],
             [x, y] = p.wrap(0, 'array'),
-            seg = segLength(p),
-            arc = seg.unshift(0).cumuSum(),
+            seg = segLength(p);
+      seg.unshift(0);
+      const arc = seg.cumuSum(),
             len = arc.at(-1),
-            q = [k, 2].cube(),
-            [arc_k, step] = [0, len].lin(clsd ? k + 1 : k);
-      if (clsd) arc_k.pop();
+            ns = s.length,
+            q = [ns, 2].cube();
+      if (scale) s = s.mul(len / scale);
       let upto = 0;
-      for (let i=0; i<k; k++) {
-        while (upto < nr - 1) {
-          if (arc_k[i] <= arc[upto + 1]) {
-            let interp = (arc_k[i] - arc[upto])/seg[upto];
-            q[i]     = x[upto]*(1 - interp) + x[upto + 1]*interp;
-            q[i + k] = y[upto]*(1 - interp) + y[upto + 1]*interp;
+      for (let i=0; i<ns; i++) {
+        while (1) {
+          if (s[i] <= arc[upto + 1]) {
+            let interp = (s[i] - arc[upto])/seg[upto + 1];
+            q[i]      = x[upto]*(1 - interp) + x[upto + 1]*interp;
+            q[i + ns] = y[upto]*(1 - interp) + y[upto + 1]*interp;
             break;  
           }
-          upto++;
+          if (++upto === nr - 1) throw Error('invalid arc length');
         }
       }
       return q;
@@ -167,6 +169,23 @@
             s = require('./simplify.js');
       if (rel) epsilon *= segLength(p).mean()[0];
       return s(p.arAr(), epsilon).matrix();
+    }
+    
+    //[num] -> cube (polygon, but not a polygon object)
+    smooth(step) {
+      step = assert.posInt(+def(assert.single(step), 2));
+      const p = this.p,
+      let n, nOld, z, zOld;
+      nOld = p._s[0];
+      for (let s=0; s<step; s++) {
+        n = 2*(nOld - 1);
+        z = [n,2].cube();
+        for (let i=0; i<nOld-1) {
+          !!!!!!!!!!!!!!!!!!!!HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+          
+          
+        }
+      }
     }
     
     //cube -> cube (vector)
@@ -269,7 +288,7 @@
   
 }
   
-      //smooth,  others...? - points at arc length?
+      //smooth,  others...?
   
 
 
@@ -283,9 +302,9 @@
       x.poly.centroid().add(100)
 3) does not check values - eg that are finite numbers
 4) use .p to get the points:    xp = x.poly;   x.p
-5)eqSpace:
-  -if closed, does not include end - last point is a 'step' beofre end
-  -if not closed, does include end
+5)atArcLength
+  -sorts the arc length values into ascending order - so rows of returned pts may not corresp to
+   row sof passed arc lengths
 6) simplify
   -no special provision for closed polygons
   -inefficient since  cube -> array-of-arrays -> simplify -> cube
@@ -295,7 +314,7 @@
   -matters clockwise or counter?
   -does not allow sep components?
 8) check all methods behave approp for open and closed polys
-9) check all methods independent of clovkwise versus counter
+9) check all methods independent of clockwise versus counter
   -poss just do this via tests
 10) dist
   -is for polyline to a point - use closed polygon if nec
@@ -303,6 +322,10 @@
    to avoid all comparisons
     -also use fact that distance from a test point to an end points of a seg is upper bound for
     dist to seg
+11)smooth 
+  -is for polylines - close if reqd
+  -can use with simplify to get smooth shape with fewer verts
+12) have not checked many args (eg where should be +ve) should be more checks?
 */
 
 
