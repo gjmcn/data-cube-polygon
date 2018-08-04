@@ -24,7 +24,7 @@
   //vertices -> num, for simple (non-intersecting) polygon
   const signedArea = v => {
     const [x, y] = v.wrap(0, 'array');
-    if (!v.isClosed()) {
+    if (!isClosed(v)) {
       x.push(x[0]);
       y.push(y[0]);
     }
@@ -101,7 +101,7 @@
     centroid() {
       const p = this.p;
       const [x, y] = p.wrap(0, 'array');
-      if (!polygon.isClosed(p)) {
+      if (!isClosed(p)) {
         x.push(x[0]);
         y.push(y[0]);
       }
@@ -113,7 +113,7 @@
         xc += (x[i] + x[i+1]) * mult;
         yc += (y[i] + y[i+1]) * mult;
       }
-      const div = 6 * polygon.area(p);
+      const div = 6 * signedArea(p);
       return [xc / div, yc / div].$shape(1);
     }
 

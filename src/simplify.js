@@ -1,16 +1,15 @@
 /*
  MODIFED VERSION OF:
-
+ 
  (c) 2017, Vladimir Agafonkin
  Simplify.js, a high-performance JS polyline simplification library
  mourner.github.io/simplify-js
  
- SPECIFICALLY:
+ MODIFICATIONS:
  
- 1) .x -> [0]
- 2) .y -> [1]
+ 1) .x  -->  [0]
+ 2) .y  -->  [1]
  3) simplified export code to:  module.exports = simplify;
- 
 */
 
 { 
