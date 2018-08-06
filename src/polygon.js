@@ -204,36 +204,8 @@
       return z;
     }
       
-    //cube -> cube (vector)
-    contain(test) {
-      checkPoints(test);
-      const p = this.p,
-            np = p._s[0],
-            nt = test._s[0],
-            z = [nt].cube();
-      //following adapted from:  https://github.com/substack/point-in-polygon
-      for (let k=0; k<nt; k++) {
-        let x = test[k],
-            y = test[k + nt],
-            inside = false;
-        for (let i=0, j=np-1; i<np; j=i++) {
-          let xi = p[i],
-              yi = p[i + np],
-              xj = p[j],
-              yj = p[j + np],
-              intersect = ((yi > y) != (yj > y))
-                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-          if (intersect) inside = !inside;
-        }
-        z[k] = inside;
-      }
-      copyKey(test, z, 1);
-      copyLabel(test, z, 1);
-      return z;
-    }
-     
     //cube[, bool] -> cube/array
-    dist(test, retPt) {
+    distance(test, retPt) {
       checkPoints(test);
       retPt = assert.single(retPt);
       const p = this.p,
@@ -294,7 +266,35 @@
       }
       return zDist;
     }
-
+    
+    //cube -> cube (vector)
+    contain(test) {
+      checkPoints(test);
+      const p = this.p,
+            np = p._s[0],
+            nt = test._s[0],
+            z = [nt].cube();
+      //following adapted from:  https://github.com/substack/point-in-polygon
+      for (let k=0; k<nt; k++) {
+        let x = test[k],
+            y = test[k + nt],
+            inside = false;
+        for (let i=0, j=np-1; i<np; j=i++) {
+          let xi = p[i],
+              yi = p[i + np],
+              xj = p[j],
+              yj = p[j + np],
+              intersect = ((yi > y) != (yj > y))
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+          if (intersect) inside = !inside;
+        }
+        z[k] = inside;
+      }
+      copyKey(test, z, 1);
+      copyLabel(test, z, 1);
+      return z;
+    }
+     
   }
  
   addArrayGetter('poly', function() {
