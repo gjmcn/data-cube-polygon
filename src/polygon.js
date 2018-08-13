@@ -1,6 +1,6 @@
 {
   'use strict';
-  
+    
   const {
     assert, def, addArrayGetter, copyKey, copyLabel, toArray
   } = Array.prototype._helper;
@@ -15,12 +15,7 @@
       Math.pow(yb - ya, 2)
     );
   };
-  
-  //[num] -> num
-  const getTol = tol => {
-    return def(assert.single(tol), 1e-10);
-  };
-  
+    
   //vertices -> num, for simple (non-intersecting) polygon
   const signedArea = v => {
     const [x, y] = v.wrap(0, 'array');
@@ -36,11 +31,10 @@
     return a / 2;
   };
   
-  //vertices[, num] -> bool
-  const isClosed = (v, tol) => {
-    tol = getTol(tol);
+  //vertices -> bool
+  const isClosed = v => {
     const nr = v._s[0];
-    return euc(v[0], v[nr], v[nr-1], v[2*nr - 1]) <= tol;
+    return euc(v[0], v[nr], v[nr-1], v[2*nr - 1]) < 1e-10;
   };
   
   //vertices -> array
@@ -72,24 +66,24 @@
     
     constructor(p) {
       if ( !p._data_cube ||
-           p._s[0] < 2 ||
+           p._s[0] < 2   ||
            p._s[1] !== 2 ||
            p._s[2] !== 1 ||
-           p._k ||
+           p._k          ||
            p._l
         ) throw Error('invalid polygon');
       this.p = p;
     }
-    
+        
     //-> bool
-    isClosed(tol) {
-      return isClosed(this.p, tol);
+    isClosed() {
+      return isClosed(this.p);
     }
 
-    //[num] -> cube (polygon, but not a polygon object)
-    close(tol) {
+    //-> cube (polygon, but not a polygon object)
+    close() {
       const p = this.p; 
-      return isClosed(p, tol) ? p.copy('core') : p.vert(p.head(1));
+      return isClosed(p) ? p.copy('core') : p.vert(p.head(1));
     }
 
     //-> num
@@ -172,10 +166,10 @@
     }
     
     //[num] -> cube (polygon, but not a polygon object)
-    smooth(iter, tol) {
+    smooth(iter) {
       iter = assert.posInt(+def(assert.single(iter), 1));
       const p = this.p,
-            clsd = isClosed(p, tol);
+            clsd = isClosed(p);
       let nOld = p._s[0],
           zOld = p,
           n,
