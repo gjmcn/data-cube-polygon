@@ -1,5 +1,5 @@
 {
-  "name": "data-cube-polygon",
+  "name": "@gjmcn/data-cube-polygon",
   "version": "0.1.0",
   "description": "Polygon methods for Data-Cube.",
   "main": "dist/polygon.js",
@@ -24,6 +24,6 @@
     "rollup-plugin-uglify": "^3.0.0"
   },
   "peerDependencies": {
-    "data-cube": "^0.1.0"
+    "@gjmcn/data-cube": "^0.1.0"
   }
 }
