@@ -16,7 +16,7 @@
     );
   };
     
-  //vertices -> num, for simple (non-intersecting) polygon
+  //vertices -> num, for simple (non-self-intersecting) polygon
   const signedArea = v => {
     const [x, y] = v.wrap(0, 'array');
     if (!isClosed(v)) {
@@ -58,7 +58,7 @@
          pt._s[2] !== 1
       ) throw Error('invalid points');
   };
-  
+
 
   //---------- polygon class ----------//
 
@@ -80,10 +80,10 @@
       return isClosed(this.p);
     }
 
-    //-> cube (polygon, but not a polygon object)
+    //-> cube (polygon - not a polygon object)
     close() {
       const p = this.p; 
-      return isClosed(p) ? p.copy('core') : p.vert(p.head(1));
+      return isClosed(p) ? p.copy('core') : p.vert(p.row(0));
     }
 
     //-> num
@@ -91,6 +91,9 @@
       return Math.abs(signedArea(this.p));
     }
   
+    HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    
     //-> cube (1-by-2)
     centroid() {
       const p = this.p;
@@ -155,7 +158,7 @@
       return q;
     }
     
-    //[num, bool] -> cube (polygon, but not a polygon object)
+    //[num, bool] -> cube (polygon - not a polygon object)
     simplify(epsilon, rel) {
       epsilon = def(assert.single(epsilon), 1);
       rel = def(assert.single(rel), true);
@@ -165,7 +168,7 @@
       return s(p.arAr(), epsilon).matrix();
     }
     
-    //[num] -> cube (polygon, but not a polygon object)
+    //[num] -> cube (polygon - not a polygon object)
     smooth(iter) {
       iter = assert.posInt(+def(assert.single(iter), 1));
       const p = this.p,
