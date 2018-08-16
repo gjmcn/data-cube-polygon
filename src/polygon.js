@@ -90,10 +90,7 @@
     area() {
       return Math.abs(signedArea(this.p));
     }
-  
-    HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    
-    
+      
     //-> cube (1-by-2)
     centroid() {
       const p = this.p;
@@ -104,29 +101,31 @@
       }
       const n = x.length;
       let xc = 0,
-          yc = 0;
+          yc = 0,
+          a = 0;
       for (let i=0; i<n-1; i++) {
-        let mult = x[i] * y[i+1] - x[i+1] * y[i];
+        const mult = x[i] * y[i+1] - x[i+1] * y[i];
         xc += (x[i] + x[i+1]) * mult;
         yc += (y[i] + y[i+1]) * mult;
+        a += x[i] * y[i+1] - x[i+1] * y[i];
       }
-      const div = 6 * signedArea(p);
-      return [xc / div, yc / div].$shape(1);
+      const mult = 1 / (a * 3);
+      return [xc * mult, yc * mult].$shape(1);
     }
-
+    
     //-> array
     segLength() {
       return segLength(this.p);
     }
     
-    //-> array
-    arcLength() {
-      return arcLength(this.p);
-    }
-    
     //-> num
     length() {
       return segLength(this.p).sum()[0];  
+    }
+    
+    //-> array
+    arcLength() {
+      return arcLength(this.p);
     }
         
     //*[, num] -> cube
@@ -143,16 +142,18 @@
             ns = s.length,
             q = [ns, 2].cube();
       if (scale) s = s.mul(len / scale);
+      s = s.gof(0).lof(len);      
       let upto = 0;
       for (let i=0; i<ns; i++) {
         while (1) {
           if (s[i] <= arc[upto + 1]) {
-            let interp = (s[i] - arc[upto])/seg[upto + 1];
+            let interp =  //0 if falsy in case NaN from repeated vertices at start of polygon
+                  (s[i] - arc[upto])/seg[upto + 1] || 0;  
             q[i]      = x[upto]*(1 - interp) + x[upto + 1]*interp;
             q[i + ns] = y[upto]*(1 - interp) + y[upto + 1]*interp;
             break;  
           }
-          if (++upto === nr - 1) throw Error('invalid arc length');
+          if (++upto === nr - 1) throw Error('invalid polygon or arc length');
         }
       }
       return q;
