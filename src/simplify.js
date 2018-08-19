@@ -1,5 +1,5 @@
 /*
- MODIFED VERSION OF:
+ MODIFIED VERSION OF:
  
  (c) 2017, Vladimir Agafonkin
  Simplify.js, a high-performance JS polyline simplification library

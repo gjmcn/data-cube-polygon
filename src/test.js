@@ -9,13 +9,26 @@
 
   require ('../dist/polygon.js');
 
-  const rectangle = [0,1,1,0,0, 0,0,2,2,0].$shape(5),  //closed, clockwise
-        triangle = [10,40,40, 20,60,20].$shape(3),     //open, counter-clockwise
-        line = [-2,4, 10,-12].$shape(2);               //open
+  const rectangle = [0,1,1,0,0,0,0,2,2,0].$shape(5),  //closed, counter-clockwise
+        triangle = [10,40,40,20,60,20].$shape(3),     //open, clockwise
+        line = [-2,4,10,-12].$shape(2);               //open
 
   console.log('\nTesting data-cube-polygon\n');
 
+  
+  //---------- constructor ----------//
+  
+  {
+    console.log('--- constructor');
 
+    assert.throw('throw-constructor-not-cube',
+                 () => [1,2,3,4].poly);
+    assert.throw('throw-constructor-invalid-shape',
+                 () => [1,2,3,4].toCube().poly);
+    assert.throw('throw-constructor-keys',
+                 () => [1,2,3,4].$shape(2).$key(0,['a','b']).poly); 
+  }
+  
   //---------- isClosed ----------//
 
   {
@@ -42,10 +55,10 @@
           rectangle);
     test('close-triangle',
            triangle.poly.close(),
-           triangle.vert([10, 20].tp()));
+           triangle.vert([10,20].tp()));
     test('close-line',
          line.poly.close(),
-         line.vert([-2, 10].tp()));
+         line.vert([-2,10].tp()));
   }
 
   //---------- area ----------//
@@ -74,10 +87,13 @@
 
     test.approx('centroid-rectangle',
            rectangle.poly.centroid(),
-           [0.5, 1].tp());
+           [0.5,1].tp());
     test.approx('centroid-triangle',
            triangle.poly.centroid(),
-           [30, 100/3].tp());
+           [30,100/3].tp());
+    test.approx('centroid-triangle-closed',
+           triangle.poly.close().poly.centroid(),
+           [30,100/3].tp());
     test('centroid-line-0',
            line.poly.centroid().shape(),
            [1,2,1]);
@@ -86,60 +102,127 @@
            [true, true].tp());
   }
 
-  //---------- segLength, length ----------//
+  //---------- segLength, arcLength, length ----------//
   
   {
-    console.log('--- segLength, length');
+    console.log('--- segLength');
 
-    HERE!!!!!!!!!!!111
-      save length of line and use in both!!!!!!!!!!!!!!
+    const lineLen = Math.hypot(6,22);
     
     test('segLength-rectangle',
-           rectangle.poly.segLength(),
-           [1,2,1,2]);
+         rectangle.poly.segLength(),
+         [1,2,1,2]);
     test('segLength-triangle-0',
-           triangle.poly.segLength(),
-           [50,40]);
+         triangle.poly.segLength(),
+         [50,40]);
     test('segLength-triangle-1',
-           triangle.poly.close().poly.segLength(),
-           [50,40,30]);
-
+         triangle.poly.close().poly.segLength(),
+         [50,40,30]);
+    test('segLength-line-0',
+         line.poly.segLength(),
+         [lineLen]);
+    test('segLength-line-1',
+         line.poly.close().poly.segLength(),
+         [lineLen, lineLen]);
+    
+    console.log('--- arcLength');
+    
+    test('arcLength-rectangle',
+         rectangle.poly.arcLength(),
+         [0,1,3,4,6]);
+    test('arcLength-triangle-0',
+         triangle.poly.arcLength(),
+         [0,50,90]);
+    test('arcLength-triangle-1',
+         triangle.poly.close().poly.arcLength(),
+         [0,50,90,120]);
+    test('arcLength-line-0',
+         line.poly.arcLength(),
+         [0,lineLen]);
+    test('arcLength-line-1',
+         line.poly.close().poly.arcLength(),
+         [0, lineLen, 2*lineLen]);
+    
+    console.log('--- length');
+    
     assert('length-rectangle',
            () => rectangle.poly.length(),
            6);
-    assert('length-triangle',
+    assert('length-triangle-0',
            () => triangle.poly.length(),
+           90);
+    assert('length-triangle-1',
+           () => triangle.poly.close().poly.length(),
            120);
     assert('length-line',
            () => line.poly.length(),
-           [6, 22].pow(2).add().sqrt()[0]);
+           lineLen);
     assert('length-line-closed',
-           () => line.poly.close().poly.area(),
-           0);
-
-  //---------- arcLength ----------//
-
+           () => line.poly.close().poly.length(),
+           2*lineLen);
+    
+  }
 
   //---------- atArcLength ----------//
+  
+  {
+    console.log('--- atArcLength');
 
-
-  
-  ????use test.approx for more of the tests?
-  ????all args covered?
-  
-  
-  
-  //---------- simplify ----------//
-
+    test('atArcLength-rectangle-0',
+        rectangle.poly.atArcLength(4.75),
+        [0,1.25].tp());
+    test('atArcLength-rectangle-1',
+        rectangle.poly.atArcLength([4,1]),  //reordered to [1,4]
+        [1,0,0,2].$shape(2));
+    test('atArcLength-triangle',
+        triangle.poly.atArcLength([10,20,30,40,50], 90),
+        [0.2,0.4,0.6,0.8,1].tile(1).mul([30, 40].tp().tile(0,5))
+          .add([10, 20].tp().tile(0,5)));
+    test('atArcLength-line',
+        line.poly.atArcLength([-1,0,1,2], 1),
+        [-2,-2,4,4,10,10,-12,-12].$shape(4));
+    test('atArcLength-repeated-vertices',
+        [3,3,5,2,2,10].$shape(3).poly.atArcLength([0,0.5,1],1),
+        [3,4,5,2,6,10].$shape(3));    
+    assert.throw('throw-atArcLength-invalid-arc-length',
+                () => rectangle.poly.atArcLength('a'));
+  }
 
   //---------- smooth ----------//
+  
+  {
+    console.log('--- smooth');
 
+    test.approx('smooth-rectangle',
+      rectangle.poly.smooth(),
+      [0.25, 0.75, 1   , 1  , 0.75, 0.25, 0  , 0  , 0.25,
+       0   , 0   , 0.5 , 1.5, 2   , 2   , 1.5, 0.5, 0]
+        .$shape(9));
+    test.approx('smooth-triangle-0',
+      triangle.poly.smooth(1),
+      [17.5, 32.5, 40, 40,
+       30,   50  , 50, 30 ]
+        .$shape(4));
+    test.approx('smooth-triangle-1',
+      triangle.poly.smooth(2),
+      [21.25, 28.75, 34.375, 38.125, 40, 40,  
+       35   , 45   , 50    , 50    , 45, 35 ]
+        .$shape(6));
+    test.approx('smooth-line-0',
+      line.poly.smooth(),
+      [-0.5,  2.5,
+       4.5 , -6.5]
+        .$shape(2));
+  
+  }
 
   //---------- distance ----------//
 
 
   //---------- contain ----------//
 
+  
+  //  ????use test.approx for more of the tests?
 
   console.log('\nTests finished\n');
 

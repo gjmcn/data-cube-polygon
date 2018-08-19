@@ -58,6 +58,9 @@
          pt._s[2] !== 1
       ) throw Error('invalid points');
   };
+  
+  //-> func
+  const simplify_js = require('./simplify.js');
 
 
   //---------- polygon class ----------//
@@ -159,14 +162,14 @@
       return q;
     }
     
-    //[num, bool] -> cube (polygon - not a polygon object)
-    simplify(epsilon, rel) {
+    //[num, bool, bool] -> cube (polygon - not a polygon object)
+    simplify(epsilon, rel, high) {
       epsilon = def(assert.single(epsilon), 1);
       rel = def(assert.single(rel), true);
-      const p = this.p,
-            s = require('./simplify.js');
+      high = !!assert.single(high);
+      const p = this.p;
       if (rel) epsilon *= segLength(p).mean()[0];
-      return s(p.arAr(), epsilon).matrix();
+      return simplify_js(p.arAr(), epsilon, high).matrix();
     }
     
     //[num] -> cube (polygon - not a polygon object)
@@ -201,7 +204,38 @@
       }
       return z;
     }
-      
+    
+    //!!!!!!!!!!!here!!!!!!!!!!!!!!
+    
+    
+    //cube -> cube (vector)
+    contain(test) {
+      checkPoints(test);
+      const p = this.p,
+            np = p._s[0],
+            nt = test._s[0],
+            z = [nt].cube();
+      //following adapted from:  https://github.com/substack/point-in-polygon
+      for (let k=0; k<nt; k++) {
+        let x = test[k],
+            y = test[k + nt],
+            inside = false;
+        for (let i=0, j=np-1; i<np; j=i++) {
+          let xi = p[i],
+              yi = p[i + np],
+              xj = p[j],
+              yj = p[j + np],
+              intersect = ((yi > y) != (yj > y))
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+          if (intersect) inside = !inside;
+        }
+        z[k] = inside;
+      }
+      copyKey(test, z, 1);
+      copyLabel(test, z, 1);
+      return z;
+    }
+    
     //cube[, bool] -> cube/array
     distance(test, retPt) {
       checkPoints(test);
@@ -264,35 +298,7 @@
       }
       return zDist;
     }
-    
-    //cube -> cube (vector)
-    contain(test) {
-      checkPoints(test);
-      const p = this.p,
-            np = p._s[0],
-            nt = test._s[0],
-            z = [nt].cube();
-      //following adapted from:  https://github.com/substack/point-in-polygon
-      for (let k=0; k<nt; k++) {
-        let x = test[k],
-            y = test[k + nt],
-            inside = false;
-        for (let i=0, j=np-1; i<np; j=i++) {
-          let xi = p[i],
-              yi = p[i + np],
-              xj = p[j],
-              yj = p[j + np],
-              intersect = ((yi > y) != (yj > y))
-                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-          if (intersect) inside = !inside;
-        }
-        z[k] = inside;
-      }
-      copyKey(test, z, 1);
-      copyLabel(test, z, 1);
-      return z;
-    }
-     
+         
   }
  
   addArrayGetter('poly', function() {
