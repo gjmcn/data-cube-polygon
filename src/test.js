@@ -216,11 +216,45 @@
   
   }
 
-  //---------- distance ----------//
-
 
   //---------- contain ----------//
+  
+  {
+    
+    console.log('--- contain');
+  
+    const rTest = [
+      0.5, 1.1, 0.5, 0.3, -0.5, 0.99, 1.01,
+      1  , 1  , 2.1, 1.9,  2.5, 0.01, -0.01
+    ].$shape(7);
+    test('contain-rectangle',
+         rectangle.poly.contain(rTest),
+         [true, false, false, true, false, true, false]);
+    
+    const tTest = [
+      25, 25, 25,   25,
+      22, 18, 40.1, 39.9
+    ].$shape(4);
+    test('contain-triangle',
+         triangle.poly.contain(tTest),
+         [true, false, false, true]);
 
+    const lTest = [
+      -2.1, 1     , 4,
+      10  , -1.001, -11.9
+    ].$shape(3).$key(0, ['a','b','c']);
+    test('contain-line',
+         line.poly.contain(lTest),
+         [false, false, false].$key(0, ['a','b','c']));
+    
+    assert.throw('throw-contain-invalid-points',
+      () => rectangle.poly.contain([1,2,3,4].toCube()));
+
+  }
+    
+  //---------- distance ----------//
+
+  // here!!!!!!!!!!!!
   
   //  ????use test.approx for more of the tests?
 

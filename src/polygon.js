@@ -205,9 +205,6 @@
       return z;
     }
     
-    //!!!!!!!!!!!here!!!!!!!!!!!!!!
-    
-    
     //cube -> cube (vector)
     contain(test) {
       checkPoints(test);
@@ -215,11 +212,14 @@
             np = p._s[0],
             nt = test._s[0],
             z = [nt].cube();
-      //following adapted from:  https://github.com/substack/point-in-polygon
+      //following adapted from:
+      //  https://github.com/substack/point-in-polygon
+      //  The MIT License (MIT)
+      //  Copyright (c) 2016 James Halliday
       for (let k=0; k<nt; k++) {
-        let x = test[k],
-            y = test[k + nt],
-            inside = false;
+        const x = test[k],
+              y = test[k + nt];
+        let inside = false;
         for (let i=0, j=np-1; i<np; j=i++) {
           let xi = p[i],
               yi = p[i + np],
@@ -235,6 +235,8 @@
       copyLabel(test, z, 1);
       return z;
     }
+    
+    //here!!!!!!!!!!!!!!!!!!!!!
     
     //cube[, bool] -> cube/array
     distance(test, retPt) {
