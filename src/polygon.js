@@ -236,8 +236,6 @@
       return z;
     }
     
-    //here!!!!!!!!!!!!!!!!!!!!!
-    
     //cube[, bool] -> cube/array
     distance(test, retPt) {
       checkPoints(test);
@@ -248,14 +246,13 @@
             seg = segLength(p),
             zDist = [nt].cube(),
             zPt = retPt ? [nt,2].cube() : null;
-      let dist, 
-          newPt = new Array(2);
+      let dist, xProj, yProj;
       const update = (d, x, y) => {
         if (d < dist) {
           dist = d;
           if (retPt) {
-            newPt[0] = x;
-            newPt[1] = y;
+            xProj = x;
+            yProj = y;
           }
         }
       };
@@ -263,8 +260,8 @@
         const x = test[t],
               y = test[t + nt];
         dist = Infinity;
-        newPt[0] = undefined;
-        newPt[1] = undefined;
+        xProj = undefined;
+        yProj = undefined;
         for (let i=1; i<np; i++) {
           const x1 = p[i - 1],
                 x2 = p[i],
@@ -272,23 +269,23 @@
                 y2 = p[i + np],
                 len = seg[i-1],
                 proj = ((x - x1)*(x2 - x1) + (y - y1)*(y2 - y1)) / len;
-          if (proj < 0 || proj > len) {  //projection misses, use closest end point
-            const d1 = euc(x, y, x1, y1),
-                  d2 = euc(x, y, x2, y2);
-            d1 < d2 ? update(d1, x1, y1) : update(d2, x2, y2);
+          if (proj <= 0) {  //use start point of segment
+            update(euc(x, y, x1, y1), x1, y1);
+          }
+          else if (proj >= len) {  //use end point of segment
+            update(euc(x, y, x2, y2), x2, y2); 
           }
           else {  //use projection
             const interp = proj / len,
                   xTmp = x1 + interp*(x2 - x1),
-                  yTmp = y1 + interp*(y2 - y1),
-                  d = euc(x, y, xTmp, yTmp); 
-            update(d, xTmp, yTmp);
+                  yTmp = y1 + interp*(y2 - y1); 
+            update(euc(x, y, xTmp, yTmp), xTmp, yTmp);
           }
         }
         zDist[t] = dist;
         if (retPt) {
-          zPt[t] = newPt[0];
-          zPt[t + nt] = newPt[1];        
+          zPt[t] = xProj;
+          zPt[t + nt] = yProj;        
         }
       }
       copyKey(test, zDist, 1);

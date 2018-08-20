@@ -4,8 +4,7 @@
   const dc = require ('@gjmcn/data-cube'),
         assert = dc._assert,
         test = assert.test,
-        h = Array.prototype._helper,
-        _isEqual = require('lodash.isequal');
+        h = Array.prototype._helper;
 
   require ('../dist/polygon.js');
 
@@ -118,10 +117,10 @@
     test('segLength-triangle-1',
          triangle.poly.close().poly.segLength(),
          [50,40,30]);
-    test('segLength-line-0',
+    test.approx('segLength-line-0',
          line.poly.segLength(),
          [lineLen]);
-    test('segLength-line-1',
+    test.approx('segLength-line-1',
          line.poly.close().poly.segLength(),
          [lineLen, lineLen]);
     
@@ -168,13 +167,13 @@
   {
     console.log('--- atArcLength');
 
-    test('atArcLength-rectangle-0',
+    test.approx('atArcLength-rectangle-0',
         rectangle.poly.atArcLength(4.75),
         [0,1.25].tp());
     test('atArcLength-rectangle-1',
         rectangle.poly.atArcLength([4,1]),  //reordered to [1,4]
         [1,0,0,2].$shape(2));
-    test('atArcLength-triangle',
+    test.approx('atArcLength-triangle',
         triangle.poly.atArcLength([10,20,30,40,50], 90),
         [0.2,0.4,0.6,0.8,1].tile(1).mul([30, 40].tp().tile(0,5))
           .add([10, 20].tp().tile(0,5)));
@@ -254,9 +253,48 @@
     
   //---------- distance ----------//
 
-  // here!!!!!!!!!!!!
-  
-  //  ????use test.approx for more of the tests?
+  {
+    console.log('--- distance');
+    
+    const rTest = [
+      0.5, 1.1, 0.5, 0.3, -0.5, 0.99, 1.01,
+      1  , 1  , 2.1, 1.9,  2.5, 0.01, -0.01
+    ].$shape(7).$key(0, ['a','g'].seq()).$label(0, 'rows');
+    test.approx(
+      'distance-rectangle',
+      rectangle.poly.distance(rTest),
+      [0.5, 0.1, 0.1, 0.1, 1/Math.sqrt(2), 
+       0.01, Math.hypot(0.01, 0.01)]
+        .$key(0, ['a','g'].seq()).$label(0, 'rows'));
+    
+    const tTest = [
+       0, 40, 50, 25, 21,
+      20, 70, 10, 40, 43 
+    ].$shape(5);
+    const [tDist, tProj] = triangle.poly.distance(tTest, true);
+    test.approx('distance-triangle-distance',
+      tDist,
+      [10, 10, 10*Math.sqrt(2), 0, 5]);
+    test.approx('distance-triangle-projection',
+      tProj,
+      [
+        10, 40, 40, 25, 25,
+        20, 60, 20, 40, 40
+      ].$shape(5));
+    
+    const lTest = [11 , 13 - 22/3].tp();    
+    const [lDist, lProj] = line.poly.distance(lTest, true);    
+    test.approx('distance-line-distance',
+      lDist,
+      [Math.hypot(11,3)]);
+    test.approx('distance-line-projection',
+      lProj,
+      [0, 10 - 22/3].tp());
+    
+    assert.throw('throw-distance-invalid-points',
+      () => rectangle.poly.distance([1,2,3,4].toCube()));
+    
+  }
 
   console.log('\nTests finished\n');
 
