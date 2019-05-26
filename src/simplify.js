@@ -12,7 +12,8 @@
  3) simplified export code to:  module.exports = simplify;
 */
 
-{ 
+(() => {
+  
   'use strict';
 
   // to suit your point format, run search/replace for '.x' and '.y';
@@ -123,4 +124,4 @@
 
   module.exports = simplify;
 
-}
+})();

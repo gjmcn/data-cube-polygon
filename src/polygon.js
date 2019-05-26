@@ -1,5 +1,5 @@
-{
-  'use strict';
+(() => {
+	'use strict';
     
   const {
     assert, def, addArrayGetter, copyKey, copyLabel, toArray
@@ -304,4 +304,4 @@
     return new Polygon(this);
   });
   
-}
+})();

@@ -1,6 +1,7 @@
-{
+(() => {
   
   'use strict';
+  
   const dc = require ('@gjmcn/data-cube'),
         assert = dc._assert,
         test = assert.test,
@@ -298,4 +299,4 @@
 
   console.log('\nTests finished\n');
 
-}
+})();
